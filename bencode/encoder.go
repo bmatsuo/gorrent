@@ -96,7 +96,7 @@ func (enc *Encoder) encodeDict(m map[string]interface{}) []byte {
 	for k, _ := range m {
 		keys = append(keys, k)
 	}
-	sort.SortStrings(keys)
+	sort.Strings(keys)
 
 	ret := []byte("d")
 	for _, k := range keys {
