@@ -122,7 +122,7 @@ func (self *Decoder) nextString() (res string, err os.Error) {
     len_end := self.pos
 
     //scan length
-    for self.stream[len_end] == ':' {
+    for self.stream[len_end] != ':' {
         if len_end++; len_end >= len(self.stream) {
             err = os.NewError("No string found ...")
             return
