@@ -20,3 +20,5 @@ ex:
 
 exclean:
 	rm -f $(EXBIN) $(EXOBJ)
+
+spotless: clean exclean
