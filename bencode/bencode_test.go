@@ -33,6 +33,9 @@ func it(t *testing.T, in string, exp int64, exp_err bool) {
 func TestInteger(t *testing.T) {
     it(t, "i23e", 23, false)
     it(t, "i124145124e", 124145124, false)
+    it(t, "i0e", 0, false)
+    it(t, "ie", 0, true)
+    it(t, "i-e", 0, true)
     it(t, "i15155", 0, true)
     it(t, "55", 55, true)
 }

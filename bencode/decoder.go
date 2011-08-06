@@ -35,7 +35,7 @@ func (self *Decoder) Decode() (res interface{}, err os.Error) {
 }
 
 var (
-    ErrorConsumed = os.NewError("This parser's token stream is consumed!")
+    ErrorConsumed     = os.NewError("This parser's token stream is consumed!")
     ErrorNoTerminator = os.NewError("No terminating 'e' found!")
 )
 
@@ -68,7 +68,7 @@ func (self *Decoder) nextObject() (res interface{}, err os.Error) {
         res, err = self.nextDict()
     default:
         res = nil
-        err = fmt.Errorf("Couldn't parse '%s' ... '%s' (%d)", self.stream, string(self.stream[self.pos]), self.pos)
+        err = fmt.Errorf("Couldn't parse '%s' index %d (%s)", self.stream, self.pos, string(self.stream[self.pos]))
     }
     if self.pos >= len(self.stream) {
         self.Consumed = true
@@ -81,31 +81,36 @@ func (self *Decoder) nextInteger() (res int64, err os.Error) {
     if self.stream[self.pos] != 'i' {
         return 0, os.NewError("No starting 'i' found")
     }
-    validstart := false //flag to check for leading 0's
-    idx := self.pos + 1
-    for {
-        if self.stream[idx] == 'e' {
-            break
-        }
+    self.pos++
+    idx := self.pos
 
-        if self.stream[idx] == '0' && !validstart {
-            err = os.NewError("Leading Zeros are not allowed in bencoded integers!")
-            return
-        }
+    if self.stream[idx] == '-' {
+        idx++
+    }
+    start := idx
 
+    for self.stream[idx] != 'e' {
         //check for bytes != '-' and '0'..'9'
-        if (self.stream[idx] < '0' || self.stream[idx] > '9') && self.stream[idx] != '-' {
-            err = os.NewError("Invalid byte '" + string(self.stream[idx]) + "' in encoded integer.")
+        if self.stream[idx] < '0' || self.stream[idx] > '9' {
+            err = fmt.Errorf("Invalid byte '%s' in encoded integer.", string(self.stream[idx]))
             return
         }
-        validstart = true
 
         if idx++; idx >= len(self.stream) {
             return 0, ErrorNoTerminator
         }
     }
 
-    s := string(self.stream[self.pos+1 : idx])
+    if start == idx {
+        err = os.NewError("No bytes in integer")
+        return
+    }
+    if self.stream[start] == '0' && idx-start > 1 {
+        err = os.NewError("Leading Zeros are not allowed in bencoded integers!")
+        return
+    }
+
+    s := string(self.stream[self.pos:idx])
     if res, err = strconv.Atoi64(s); err != nil {
         return // Or: return 0, err
     }
