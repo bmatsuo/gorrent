@@ -57,18 +57,19 @@ func (self *Decoder) nextObject() (res interface{}, err os.Error) {
         return nil, ErrorConsumed
     }
 
-    switch c := self.stream[self.pos]; {
-    case c == 'i':
+    switch c := self.stream[self.pos]; c {
+    case 'i':
         res, err = self.nextInteger()
-    case c >= '0' && c <= '9':
-        res, err = self.nextString()
-    case c == 'l':
+    case 'l':
         res, err = self.nextList()
-    case c == 'd':
+    case 'd':
         res, err = self.nextDict()
     default:
-        res = nil
-        err = fmt.Errorf("Couldn't parse '%s' index %d (%s)", self.stream, self.pos, string(self.stream[self.pos]))
+        if c >= '0' && c <= '9' {
+            res, err = self.nextString()
+        } else {
+            err = fmt.Errorf("Couldn't parse '%s' index %d (%s)", self.stream, self.pos, string(self.stream[self.pos]))
+        }
     }
     if self.pos >= len(self.stream) {
         self.Consumed = true
@@ -126,25 +127,24 @@ func (self *Decoder) nextString() (res string, err os.Error) {
         return
     }
 
+    //scan length
     len_start := self.pos
     len_end := self.pos
-
-    //scan length
     for self.stream[len_end] != ':' {
         if len_end++; len_end >= len(self.stream) {
             err = os.NewError("No string found ...")
             return
         }
     }
+    len_str := string(self.stream[len_start:len_end])
 
-    if l, e := strconv.Atoi(string(self.stream[len_start:len_end])); e != nil {
+    if l, e := strconv.Atoi(len_str); e != nil {
         err = fmt.Errorf("Couldn't parse string length specifier: %s", e.String())
     } else if l >= len(self.stream[len_end:]) {
         err = os.NewError("Specified length longer than data buffer ...")
     } else {
         len_end++ //skip the ':'
         res = string(self.stream[len_end : len_end+l])
-        err = nil
         self.pos = len_end + l
     }
     return
