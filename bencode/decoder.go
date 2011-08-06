@@ -184,16 +184,18 @@ func (self *Decoder) nextDict() (res map[string]interface{}, err os.Error) {
         err = os.NewError("This is not a dict!")
         return
     }
-    res = make(map[string]interface{})
+    self.pos++ //skip 'd'
+
     if self.stream[self.pos] == 'e' {
         self.pos++ //skip 'e'
         return
     }
+
+    res = make(map[string]interface{})
     var (
         key string
         val interface{}
     )
-    self.pos++ //skip 'd'
     for {
         if key, err = self.nextString(); err != nil {
             return

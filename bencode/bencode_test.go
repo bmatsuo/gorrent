@@ -104,3 +104,47 @@ func TestList(t *testing.T) {
     lt(t, "le", []interface{}{}, false)
     lt(t, "li15155e", []interface{}{}, true)
 }
+
+func dt(t *testing.T, in string, exp map[string]interface{}, exp_err bool) {
+    // Summarize a decoding, either expected or observed.
+    dsumm := func(s string, dict map[string]interface{}) string { return fmt.Sprintf("%s->%v", s, dict) }
+
+    d := NewDecoder([]byte(in))
+    dict, err := d.Decode()
+    if !exp_err {
+        if err != nil {
+            DecodingError(t, "list", "unexpected error", dsumm(in, exp), err.String())
+        }
+        switch dict.(type) {
+        case map[string]interface{}:
+            cast := dict.(map[string]interface{})
+            if len(cast) != len(exp) {
+                DecodingError(t, "list", "unexpected result", fmt.Sprintf("%v", exp), dsumm(in, cast))
+            } else {
+                for i := range cast {
+                    if cast[i] != exp[i] {
+                        DecodingError(t, "list", "unexpected result", fmt.Sprintf("%v", exp), dsumm(in, cast))
+                        break
+                    }
+                }
+            }
+        default:
+            if len(exp) != 0 {
+                DecodingError(t, "list", "unexpected result", fmt.Sprintf("%v", exp), fmt.Sprintf("%v", dict))
+            }
+        }
+    } else {
+        if err == nil {
+            cast := dict.(map[string]interface{})
+            DecodingError(t, "string", "unexpected result", "Error", dsumm(in, cast))
+        }
+    }
+}
+
+func TestDict(t *testing.T) {
+    dt(t, "d4:blahi124145124ee", map[string]interface{}{"blah": int64(124145124)}, false)
+    dt(t, "d5:hello5:worlde", map[string]interface{}{"hello": "world"}, false)
+    dt(t, "de", map[string]interface{}{}, false)
+    dt(t, "d4:highi5e", map[string]interface{}{}, true)
+    dt(t, "d5:highi5ee", map[string]interface{}{}, true)
+}
