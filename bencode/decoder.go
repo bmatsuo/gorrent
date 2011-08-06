@@ -191,12 +191,13 @@ func (self *Decoder) nextDict() (res map[string]interface{}, err os.Error) {
     }
     self.pos++ //skip 'd'
 
+    res = make(map[string]interface{})
+
     if self.stream[self.pos] == 'e' {
         self.pos++ //skip 'e'
         return
     }
 
-    res = make(map[string]interface{})
     var (
         key string
         val interface{}
