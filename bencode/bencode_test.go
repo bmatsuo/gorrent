@@ -101,6 +101,6 @@ func lt(t *testing.T, in string, exp []interface{}, exp_err bool) {
 func TestList(t *testing.T) {
     lt(t, "li124145124ee", []interface{}{int64(124145124)}, false)
     lt(t, "li15155ee", []interface{}{int64(15155)}, false)
-    lt(t, "le", []interface{}{}, true)
+    lt(t, "le", []interface{}{}, false)
     lt(t, "li15155e", []interface{}{}, true)
 }

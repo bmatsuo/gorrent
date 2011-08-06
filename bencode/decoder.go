@@ -151,8 +151,13 @@ func (self *Decoder) nextList() (res []interface{}, err os.Error) {
         err = os.NewError("This is not a list!")
         return
     }
-
     self.pos++ //skip 'l'
+
+    if self.stream[self.pos] == 'e' {
+        self.pos++ //skip 'e'
+        return
+    }
+
     var obj interface{}
     for {
         if obj, err = self.nextObject(); err != nil {
@@ -180,6 +185,10 @@ func (self *Decoder) nextDict() (res map[string]interface{}, err os.Error) {
         return
     }
     res = make(map[string]interface{})
+    if self.stream[self.pos] == 'e' {
+        self.pos++ //skip 'e'
+        return
+    }
     var (
         key string
         val interface{}
