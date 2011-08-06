@@ -34,7 +34,10 @@ func (self *Decoder) Decode() (res interface{}, err os.Error) {
     return self.nextObject()
 }
 
-var ErrorConsumed = os.NewError("This parser's token stream is consumed!")
+var (
+    ErrorConsumed = os.NewError("This parser's token stream is consumed!")
+    ErrorNoTerminator = os.NewError("No terminating 'e' found!")
+)
 
 //DecodeAll reads all objects from the input stream
 func (self *Decoder) DecodeAll() (res []interface{}, err os.Error) {
@@ -65,7 +68,7 @@ func (self *Decoder) nextObject() (res interface{}, err os.Error) {
         res, err = self.nextDict()
     default:
         res = nil
-        err = fmt.Errorf("Couldn't parse '%s' ... '%s'", self.stream, self.stream[self.pos])
+        err = fmt.Errorf("Couldn't parse '%s' ... '%s' (%d)", self.stream, string(self.stream[self.pos]), self.pos)
     }
     if self.pos >= len(self.stream) {
         self.Consumed = true
@@ -98,7 +101,7 @@ func (self *Decoder) nextInteger() (res int64, err os.Error) {
         validstart = true
 
         if idx++; idx >= len(self.stream) {
-            return 0, os.NewError("No ending 'e' found")
+            return 0, ErrorNoTerminator
         }
     }
 
@@ -156,6 +159,10 @@ func (self *Decoder) nextList() (res []interface{}, err os.Error) {
             return
         }
         res = append(res, obj)
+        if self.pos >= len(self.stream) {
+            err = ErrorNoTerminator
+            return
+        }
         if self.stream[self.pos] == 'e' {
             self.pos++ //skip 'e'
             break
@@ -187,6 +194,10 @@ func (self *Decoder) nextDict() (res map[string]interface{}, err os.Error) {
         }
         //fmt.Printf("key: %s\nval: %#v\n", key, val)
         res[string(key)] = val
+        if self.pos >= len(self.stream) {
+            err = ErrorNoTerminator
+            return
+        }
         if self.stream[self.pos] == 'e' {
             self.pos++ //skip 'e'
             break
