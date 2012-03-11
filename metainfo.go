@@ -1,13 +1,14 @@
 package main
 
 import (
-	"bencode"
-	"os"
+	"errors"
+	"gorrent/bencode"
 	"io/ioutil"
 	//"bytes"
 	//"fmt"
 	"crypto/sha1"
 )
+
 //metainfo file (.torrent file) handling
 
 type MetaInfo struct {
@@ -15,8 +16,7 @@ type MetaInfo struct {
 	parsed map[string]interface{}
 }
 
-
-func (mi *MetaInfo) ReadFromFile(filename string) os.Error {
+func (mi *MetaInfo) ReadFromFile(filename string) error {
 	b, err := ioutil.ReadFile(filename)
 	if err != nil {
 		return err
@@ -26,7 +26,7 @@ func (mi *MetaInfo) ReadFromFile(filename string) os.Error {
 	dec := bencode.NewDecoder(b)
 	o, err := dec.Decode()
 	if err != nil {
-		return os.NewError("Couldn't parse torrent: " + err.String())
+		return errors.New("Couldn't parse torrent: " + err.Error())
 	}
 
 	mi.parsed = o.(map[string]interface{})
@@ -42,5 +42,5 @@ func (mi *MetaInfo) InfoHash() []byte {
 	hasher := sha1.New()
 	hasher.Write(b)
 	//s := fmt.Sprintf("%x", hasher.Sum())
-	return hasher.Sum()
+	return hasher.Sum(nil)
 }

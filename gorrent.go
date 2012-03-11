@@ -1,7 +1,7 @@
 package main
 
 import (
-	"bencode"
+	"gorrent/bencode"
 	"fmt"
 	"reflect"
 //	"io/ioutil"
@@ -14,7 +14,7 @@ func test0r(in string) {
 	for !p.Consumed {
 		l, err := p.Decode()
 		if err != nil {
-			fmt.Printf("\tparser error: %s\n", err.String())
+			fmt.Printf("\tparser error: %v\n", err)
 			break
 		}
 		switch l.(type) {
@@ -59,7 +59,7 @@ func main() {
 	p := bencode.NewDecoder(b)
 	r, err := p.Decode()
 	if err != nil {
-		fmt.Printf("Couldn't parse torrent: %s\n", err.String())
+		fmt.Printf("Couldn't parse torrent: %v\n", err)
 		return
 	}
 	fmt.Printf("%#v\n", r)
@@ -76,7 +76,7 @@ func main() {
 	torrent := &MetaInfo{}
 	err := torrent.ReadFromFile("test.torrent")
 	if err != nil {
-		fmt.Println(err.String())
+		fmt.Println(err)
 		return
 	}
 
